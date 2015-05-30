@@ -19,6 +19,7 @@ package cpd4414.assign2;
 
 import java.util.ArrayDeque;
 import java.util.Date;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -26,10 +27,56 @@ import java.util.Queue;
  * @author c0652863
  */
 public class OrderQueue {
+
     Queue<Order> orderQueue = new ArrayDeque<>();
-    
-    public void add(Order order) {
+    Queue<Order> processQueue = new ArrayDeque<>();
+
+    public void add(Order order) throws Exception {
+        String customerId = order.getCustomerId();
+        String customerName = order.getCustomerName();
+        List<Purchase> listOfPurchase = order.getListOfPurchases();
+        if (customerId.isEmpty() || customerName.isEmpty()) {
+            throw new customerEmptyException();
+        } else if (listOfPurchase.isEmpty()) {
+            throw new listEmptyException();
+        }
         orderQueue.add(order);
         order.setTimeReceived(new Date());
     }
+
+    public Order next() {
+        return orderQueue.element();
+    }
+
+    public void checkTimeReceivedProdQty(Order order) throws noQuantityInInventoryException, noRecievedTimeException {
+        if (order.getTimeReceived() == null) {
+            throw new noRecievedTimeException();
+        }
+        for (Purchase item : order.getListOfPurchases()) {
+            // Product quantity from database
+            int prodQtyFromDB = Inventory.getQuantityForId(item.getProductId());
+            // Product quantity from order
+            int qtyFromOrder = item.getQuantity();
+            // If qty in order is greater than qty in inventory throw exception
+            if (qtyFromOrder > prodQtyFromDB) {
+                throw new noQuantityInInventoryException("Quantity for product id " + item.getProductId() + " in the inventory is only " + prodQtyFromDB);
+            }
+        }
+    }
+
+    public void process(Order order) throws Exception {
+        checkTimeReceivedProdQty(order);  // check prod qty and time recieved in db
+        order.setTimeProcessed(new Date());
+        orderQueue.remove(order);
+        processQueue.add(order);
+    }
+
+    public void fulfill(Order ord) throws Exception {
+        checkTimeReceivedProdQty(ord);  // check prod qty in db
+        if (ord.getTimeProcessed() == null) {
+            throw new noTimeProcessed();
+        }
+        ord.setTimeFulfilled(new Date());
+    }
+
 }
