@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package cpd4414.assign2;
 
 import java.util.ArrayDeque;
@@ -53,11 +52,8 @@ public class OrderQueue {
             throw new noRecievedTimeException();
         }
         for (Purchase item : order.getListOfPurchases()) {
-            // Product quantity from database
             int prodQtyFromDB = Inventory.getQuantityForId(item.getProductId());
-            // Product quantity from order
             int qtyFromOrder = item.getQuantity();
-            // If qty in order is greater than qty in inventory throw exception
             if (qtyFromOrder > prodQtyFromDB) {
                 throw new noQuantityInInventoryException("Quantity for product id " + item.getProductId() + " in the inventory is only " + prodQtyFromDB);
             }
@@ -65,16 +61,14 @@ public class OrderQueue {
     }
 
     public void process(Order order) throws Exception {
-        // check prod qty and time recieved in db
-        checkTimeReceivedProdQty(order);  
-        
+        checkTimeReceivedProdQty(order);
         order.setTimeProcessed(new Date());
         orderQueue.remove(order);
         processQueue.add(order);
     }
 
     public void fulfill(Order order) throws Exception {
-        checkTimeReceivedProdQty(order);  // check prod qty in db
+        checkTimeReceivedProdQty(order);
         if (order.getTimeProcessed() == null) {
             throw new noTimeProcessed();
         }
