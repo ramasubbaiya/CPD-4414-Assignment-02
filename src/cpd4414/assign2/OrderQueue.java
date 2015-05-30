@@ -65,18 +65,20 @@ public class OrderQueue {
     }
 
     public void process(Order order) throws Exception {
-        checkTimeReceivedProdQty(order);  // check prod qty and time recieved in db
+        // check prod qty and time recieved in db
+        checkTimeReceivedProdQty(order);  
+        
         order.setTimeProcessed(new Date());
         orderQueue.remove(order);
         processQueue.add(order);
     }
 
-    public void fulfill(Order ord) throws Exception {
-        checkTimeReceivedProdQty(ord);  // check prod qty in db
-        if (ord.getTimeProcessed() == null) {
+    public void fulfill(Order order) throws Exception {
+        checkTimeReceivedProdQty(order);  // check prod qty in db
+        if (order.getTimeProcessed() == null) {
             throw new noTimeProcessed();
         }
-        ord.setTimeFulfilled(new Date());
+        order.setTimeFulfilled(new Date());
     }
 
 }
